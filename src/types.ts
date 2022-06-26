@@ -1,0 +1,6 @@
+interface PDFSchema {
+
+}
+
+export {PDFSchema
+}
