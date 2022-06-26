@@ -13,6 +13,17 @@ module.exports = {
     '@typescript-eslint/no-dupe-class-members': ['error'],
     '@typescript-eslint/no-useless-constructor': ['error'],
     '@typescript-eslint/no-inferrable-types': ['off'],
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        selector: 'default',
+        format: ['camelCase'],
+      },
+      {
+        selector: 'typeLike',
+        format: ['PascalCase'],
+      }
+    ],
 
     'import/extensions': ['error', 'ignorePackages', { js: 'always', jsx: 'never', ts: 'never', tsx: 'never' }],
   },
