@@ -32,6 +32,7 @@ interface PDFImageElement extends PDFBaseElement {
 
 interface PDFCustomElement extends PDFBaseElement {
     type: string,
+    [key: string]: unknown
 }
 
 interface PDFSchema {
@@ -47,5 +48,5 @@ interface PDFSchema {
 }
 
 export {
-    PDFSchema, PDFContext, PDFPage, PDFElement
+    PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement, PDFCustomElement
 }

@@ -1,11 +1,19 @@
 import PDFDocument from 'pdfkit'
 import { PassThrough } from 'stream'
 
-import { PDFSchema, PDFContext, PDFPage, PDFElement } from './types'
+import { PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement } from './types'
 
-const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFContext | string) => {
-    if (typeof context == "string" && schema.globalContexts && schema.globalContexts[context]) {
-        context = schema.globalContexts[context]
+const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFContext | string, options: ParsingOptions) => {
+    if (typeof context == "string") {
+        if (schema.globalContexts && schema.globalContexts[context]) {
+            context = schema.globalContexts[context]
+        } else {
+            if (options.customContext) {
+                return options.customContext(doc, schema, context)
+            } else {
+                throw `Context "${context}" was not found`
+            }
+        }
     }
     Object.entries(context).map(([key, value]) => {
         switch (key) {
@@ -24,11 +32,7 @@ const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFCo
     })
 }
 
-const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => {
-    if (element.context) {
-        applyContext(doc, schema, element.context)
-    }
-
+const parseCoordinates = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => {
     if (element.x) {
         doc.moveTo(element.x, doc.y)
     }
@@ -48,36 +52,66 @@ const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFEl
             }
         }
     }
+}
 
+const parseText = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFTextElement) => {
+    doc.text(element.text, element.options)
+}
+
+const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImageElement) => {
+    doc.image(element.image, element.options)
+}
+
+const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement, options: ParsingOptions) => {
+    if (element.context) {
+        applyContext(doc, schema, element.context, options)
+    }
+
+    parseCoordinates(doc, schema, element)
 
     switch (element.type) {
         case 'text':
+            parseText(doc, schema, element as PDFTextElement)
             break
+
         case 'image':
+            parseImage(doc, schema, element as PDFImageElement)
             break
+
+        default:
+            if (options.customElementParser) {
+                options.customElementParser(doc, schema, element)
+            } else {
+                throw `Element "${element.type}" can't be parsed (either no customElementParser was defined or it wasn't a supported type: text, image...)`
+            }
     }
 }
 
-const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage) => {
+const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, options: ParsingOptions) => {
     if (page.options) {
         doc.addPage(page.options)
     }
     doc.addPage()
 
     if (schema.pageHeader) {
-        schema.pageHeader.forEach(element => parseElement(doc, schema, element))
+        schema.pageHeader.forEach(element => parseElement(doc, schema, element, options))
     }
 
     page.elements.forEach(element => {
         if (page.context) {
-            applyContext(doc, schema, page.context)
+            applyContext(doc, schema, page.context, options)
         }
 
-        parseElement(doc, schema, element)
+        parseElement(doc, schema, element, options)
     })
 }
 
-const parseSchema = (schema: PDFSchema, options?: {}): Promise<BlobPart[]> => {
+interface ParsingOptions {
+    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => void
+    customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => void
+}
+
+const parseSchema = (schema: PDFSchema, options: ParsingOptions = {}): Promise<BlobPart[]> => {
     const doc = new PDFDocument(schema.options);
 
     const stream = new PassThrough()
@@ -88,10 +122,10 @@ const parseSchema = (schema: PDFSchema, options?: {}): Promise<BlobPart[]> => {
 
     schema.pages.forEach(page => {
         if (schema.mainContext) {
-            applyContext(doc, schema, schema.mainContext)
+            applyContext(doc, schema, schema.mainContext, options)
         }
 
-        parsePage(doc, schema, page)
+        parsePage(doc, schema, page, options)
     })
 
     doc.end()
