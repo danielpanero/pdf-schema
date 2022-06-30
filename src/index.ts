@@ -1,5 +1,4 @@
 import PDFDocument from 'pdfkit'
-import { PassThrough } from 'stream'
 
 import { PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement } from './types'
 
@@ -111,14 +110,10 @@ interface ParsingOptions {
     customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => void
 }
 
-const parseSchema = (schema: PDFSchema, options: ParsingOptions = {}): Promise<BlobPart[]> => {
+const parseSchema = (schema: PDFSchema, stream: NodeJS.WritableStream, options: ParsingOptions = {}) => {
     const doc = new PDFDocument(schema.options);
 
-    const stream = new PassThrough()
-    const dataBuffers: BlobPart[] = []
-
     doc.pipe(stream)
-    stream.on('data', (chunck: BlobPart) => dataBuffers.push(chunck))
 
     schema.pages.forEach(page => {
         if (schema.mainContext) {
@@ -128,10 +123,7 @@ const parseSchema = (schema: PDFSchema, options: ParsingOptions = {}): Promise<B
         parsePage(doc, schema, page, options)
     })
 
-    doc.end()
-    return new Promise((resolve) => {
-        stream.on('end', () => resolve(dataBuffers))
-    })
+    return doc
 }
 
 export default parseSchema
