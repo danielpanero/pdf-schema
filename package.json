@@ -1,5 +1,5 @@
 {
-  "name": "pdf-scjema",
+  "name": "pdf-schema",
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -12,7 +12,6 @@
     "format:check": "prettier \"./**\" --ignore-unknown --check"
   },
   "dependencies": {
-    "dotenv": "^16.0.0",
     "pdfkit": "^0.13.0",
     "tslib": "^2.3.1"
   },
