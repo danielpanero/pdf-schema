@@ -40,8 +40,8 @@ interface PDFSchema {
     globalContexts?: { [key: string]: PDFContext },
     options: PDFKit.PDFDocumentOptions,
 
-    mm: boolean,
-    images: { [key: string]: string },
+    mm?: boolean,
+    images?: { [key: string]: string },
 
     pages: PDFPage[],
     pageHeader?: PDFElement[]
