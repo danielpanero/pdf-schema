@@ -9,10 +9,11 @@ PDF Document generation based on a JSON-Template
 - Extremely customizable: custom elements, custom context...
 
 ## Planned for V1
-- [ ] Schema validation
 - [ ] Tables
-- [ ] Simple geometry (lines...)
+- [ ] Relative positioning 
 - [ ] Support for millimiters
+- [ ] Schema validation
+- [ ] Simple geometry (lines...)
 - [ ] Exposing PDFKit hooks: onPageAdded...
 - [ ] Documentation
 - [ ] Code cleanup

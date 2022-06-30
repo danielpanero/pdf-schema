@@ -7,9 +7,7 @@ const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFCo
         if (schema.globalContexts && schema.globalContexts[context]) {
             context = schema.globalContexts[context]
         } else {
-            if (options.customContext) {
-                return options.customContext(doc, schema, context)
-            } else {
+            if (!options.customContext || !options.customContext(doc, schema, context)) {
                 throw `Context "${context}" was not found`
             }
         }
@@ -54,10 +52,13 @@ const parseCoordinates = (doc: typeof PDFDocument, schema: PDFSchema, element: P
 }
 
 const parseText = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFTextElement) => {
+    // TODO(@danielpanero): Add block alignement (even if aligned to the right is fixed to the left) or bottom / top
     doc.text(element.text, element.options)
 }
 
 const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImageElement) => {
+    // TODO(@danielpanero): control if element.image is base64, if not check in the schema image at page level, or document level
+    // TODO(@danielpanero): support for aligned left / right
     doc.image(element.image, element.options)
 }
 
@@ -78,9 +79,7 @@ const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFEl
             break
 
         default:
-            if (options.customElementParser) {
-                options.customElementParser(doc, schema, element)
-            } else {
+            if (!options.customElementParser || !options.customElementParser(doc, schema, element)) {
                 throw `Element "${element.type}" can't be parsed (either no customElementParser was defined or it wasn't a supported type: text, image...)`
             }
     }
@@ -89,8 +88,9 @@ const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFEl
 const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, options: ParsingOptions) => {
     if (page.options) {
         doc.addPage(page.options)
+    } else {
+        doc.addPage()
     }
-    doc.addPage()
 
     if (schema.pageHeader) {
         schema.pageHeader.forEach(element => parseElement(doc, schema, element, options))
@@ -106,8 +106,8 @@ const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, op
 }
 
 interface ParsingOptions {
-    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => void
-    customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => void
+    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => boolean
+    customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => boolean
 }
 
 const parseSchema = (schema: PDFSchema, stream: NodeJS.WritableStream, options: ParsingOptions = {}) => {
