@@ -7,22 +7,71 @@ import PDFSchemaParser from '../src/index'
 import { PDFSchema } from '../src/types'
 
 const tests: { [key: string]: PDFSchema } = {
-    "test1": {
+    "empty_page": {
         mainContext: {},
         options: {
-            size: "A4"
+            size: "A4",
+            autoFirstPage: false
+        },
+        pages: []
+    },
+    "text_multiple_page": {
+        mainContext: {},
+        options: {
+            size: "A4",
+            autoFirstPage: false
+        },
+        globalContexts: {
+            h1: {
+                font: "Helvetica-Bold",
+                fontSize: 25
+            },
+            h3: {
+                font: "Helvetica",
+                fontSize: 13,
+                fillColor: "red"
+            }
         },
         pages: [{
             elements: [{
                 type: "text",
-                text: "Ciao sono Dniael"
+                text: "First",
+                context: "h1"
+            }]
+        },
+        {
+            elements: [{
+                x: 200,
+                y: 200,
+                type: "text",
+                text: "Second",
+                context: "h3"
+            }]
+        },
+        {
+            elements: [{
+                x: 200,
+                y: 200,
+                type: "text",
+                text: "Third",
+            }]
+        },
+        {
+            elements: [{
+                x: 200,
+                y: "next-line",
+                type: "text",
+                text: "Third",
+                context: {
+                    fillColor: "blue"
+                }
             }]
         }]
     }
 }
 
 describe("Testing multiple snapshots", () => {
-    test.each(Object.entries(tests))("%p", async (filename: string, schema: PDFSchema) => {
+    test.concurrent.each(Object.entries(tests))("%p", async (filename: string, schema: PDFSchema) => {
         const stream = createWriteStream(`${__dirname}/tmp/${filename}.pdf`)
         const doc = PDFSchemaParser(schema, stream)
         doc.end()
