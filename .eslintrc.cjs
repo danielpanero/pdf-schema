@@ -24,7 +24,7 @@ module.exports = {
         format: ['PascalCase'],
       }
     ],
-
+    'quotes': ['error', 'single'],
     'import/extensions': ['error', 'ignorePackages', { js: 'always', jsx: 'never', ts: 'never', tsx: 'never' }],
   },
 }

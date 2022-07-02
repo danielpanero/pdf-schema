@@ -3,7 +3,7 @@ import PDFDocument from 'pdfkit'
 import { PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement } from './types'
 
 const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFContext | string, options: ParsingOptions) => {
-    if (typeof context == "string") {
+    if (typeof context == 'string') {
         if (schema.globalContexts && schema.globalContexts[context]) {
             context = schema.globalContexts[context]
         } else {
