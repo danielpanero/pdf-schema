@@ -1,8 +1,6 @@
-const isCI = process.env.CI === 'true'
-
 export default {
   verbose: true,
-  collectCoverage: false,
+  collectCoverage: true,
   resetModules: true,
   restoreMocks: true,
   testEnvironment: 'node',
@@ -21,6 +19,4 @@ export default {
   },
   collectCoverageFrom: ['<rootDir>/src/*.ts'],
   coveragePathIgnorePatterns: ['<rootDir>/dist/', '/node_modules/', '<rootDir>/scripts', '<rootDir>/tools'],
-  coverageProvider: 'v8',
-  coverageReporters: isCI ? ['json'] : ['text'],
 }
