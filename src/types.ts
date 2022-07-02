@@ -12,8 +12,8 @@ interface PDFPage {
 
 type PDFElement = PDFTextElement | PDFImageElement | PDFCustomElement
 interface PDFBaseElement {
-    x?: number,
-    y?: number | "next-line" | "previous-line"
+    x?: number | "left" | "center" | "right"
+    y?: number | "next-line" | "previous-line" | "top" | "center" | "bottom"
     context?: PDFContext | string,
     type: 'text' | 'image' | string
 }
