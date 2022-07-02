@@ -98,6 +98,7 @@ const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImag
         applyContext(doc, schema, element.context, options)
     }
 
+    //FIXME(@danielpanero): dix in the case that options where provided
     const image = doc.openImage(element.image)
 
     parseCoordinates(doc, schema, element, image.width, image.height)
@@ -155,10 +156,13 @@ interface ParsingOptions {
 
 const parseSchema = (schema: PDFSchema, stream: NodeJS.WritableStream, options: ParsingOptions = {}) => {
     const doc = new PDFDocument(schema.options);
-
-    //TODO(@danielpanero) init all images for faster parsing
-
     doc.pipe(stream)
+
+    if (schema.images) {
+        Object.entries(schema.images).map(([key, src]) => {
+            doc._imageRegistry[key] = doc.openImage(src)
+        })
+    }
 
     schema.pages.forEach(page => {
         if (schema.mainContext) {

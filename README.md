@@ -10,7 +10,7 @@ PDF Document generation based on a JSON-Template
 
 ## Planned for V1
 - [ ] Tables
-- [ ] Relative positioning 
+- [x] Relative positioning 
 - [ ] Support for millimiters
 - [ ] Schema validation
 - [ ] Simple geometry (lines...)

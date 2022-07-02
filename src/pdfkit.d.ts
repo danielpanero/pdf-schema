@@ -27,5 +27,6 @@ type OpenImageProps = {
 declare namespace PDFKit {
     interface PDFDocument {
         openImage(path: string): OpenImageProps
+        _imageRegistry: {[key: string]: OpenImageProps}
     }
 }
