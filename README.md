@@ -9,7 +9,7 @@ PDF Document generation based on a JSON-Template
 - Extremely customizable: custom elements, custom context...
 
 ## Planned for V1
-- [ ] Tables
+- [x] Tables
 - [x] Relative positioning 
 - [ ] Support for millimiters
 - [ ] Schema validation
@@ -20,6 +20,8 @@ PDF Document generation based on a JSON-Template
 - [ ] More testing
 
 ### Ideas for the future:
+- Support for element in table
+- Custom relative container
 - Agnostic schema / support for other libraries than PDFKit
 - Custom drag and drop editor
 - Custom loader for webpack / rollup /... in order to precompile template for maximal speed.

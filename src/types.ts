@@ -1,76 +1,81 @@
-interface PDFContext {
+import PDFDocument from 'pdfkit'
+
+export interface PDFContext {
     font?: string
     fontSize?: number
     fillColor?: string
 }
 
-interface PDFPage {
+export interface PDFPage {
     options?: PDFKit.PDFDocumentOptions
     context?: PDFContext | string
     elements: PDFElement[]
 }
 
-type PDFElement = PDFTextElement | PDFImageElement | PDFTableElement | PDFCustomElement
-interface PDFBaseElement {
+export type PDFElement = PDFTextElement | PDFImageElement | PDFTableElement | PDFCustomElement
+export interface PDFBaseElement {
     x?: number | 'left' | 'center' | 'right'
     y?: number | 'next-line' | 'previous-line' | 'top' | 'center' | 'bottom'
     context?: PDFContext | string,
     type: 'text' | 'image' | string
 }
 
-interface PDFTextElement extends PDFBaseElement {
+export interface PDFTextElement extends PDFBaseElement {
     type: 'text'
     text: string
     options?: PDFKit.Mixins.TextOptions
 }
 
-interface PDFImageElement extends PDFBaseElement {
+export interface PDFImageElement extends PDFBaseElement {
     type: 'image'
     image: string
     options?: PDFKit.Mixins.ImageOption
 }
 
-interface PDFTableElement extends PDFBaseElement {
+export interface PDFTableElement extends PDFBaseElement {
     type: 'table'
-    width: number | string | 'fill-width'
-    height?: number | string | 'fill-height'
+    width: number | string
 
     headerIndex?: number
     autoHeader?: boolean
-    grid?: 'vertical' | 'horizontal' | 'both'
-    bordered?: boolean
+    autoPage?: boolean
+    grid?: 'vertical' | 'horizontal' | 'both' | 'T'
+    rowHeight?: number
+    padding?: number | number[]
 
-    rows: (PDFTableRow | PDFElement)[]
+    rows: PDFTableRow[]
 }
 
-interface PDFTableRow {
+export interface PDFTableRow {
     type: 'table-row'
     width?: number | string | 'fill-width'
-    height?: number | string
+    height?: number | 'auto'
 
     context?: PDFContext | string
     padding?: number | number[]
     backgroundColor?: string
 
-    columns: (PDFTableColumn | PDFElement)[]
+    columns: PDFTableColumn[]
 }
 
-interface PDFTableColumn {
+export interface PDFTableColumn {
     type: 'table-column'
     width?: number | string
-    height?: number
 
+    context?: PDFContext | string
     padding?: number | number[]
+    backgroundColor?: string
 
-    element: string | PDFElement
+    text: string
+    options?: PDFKit.Mixins.TextOptions
 }
 
-interface PDFCustomElement extends PDFBaseElement {
+export interface PDFCustomElement extends PDFBaseElement {
     type: string,
     [key: string]: unknown
 }
 
-interface PDFSchema {
+export interface PDFSchema {
     mainContext: string | PDFContext
     globalContexts?: { [key: string]: PDFContext }
     options: PDFKit.PDFDocumentOptions
@@ -82,6 +87,7 @@ interface PDFSchema {
     pageHeader?: PDFElement[]
 }
 
-export {
-    PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement, PDFCustomElement
+export interface ParsingOptions {
+    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => boolean
+    customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => boolean
 }

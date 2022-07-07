@@ -1,8 +1,10 @@
 import PDFDocument from 'pdfkit'
 
-import { PDFSchema, PDFContext, PDFPage, PDFElement, PDFTextElement, PDFImageElement } from './types'
+import { PDFContext, PDFElement, PDFImageElement, PDFPage, PDFSchema, PDFTableElement, PDFTextElement, ParsingOptions } from './types'
 
-const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFContext | string, options: ParsingOptions) => {
+import { parseTable } from './table'
+
+export const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFContext | string, options: ParsingOptions) => {
     if (typeof context == 'string') {
         if (schema.globalContexts && schema.globalContexts[context]) {
             context = schema.globalContexts[context]
@@ -29,7 +31,7 @@ const applyContext = (doc: typeof PDFDocument, schema: PDFSchema, context: PDFCo
     })
 }
 
-const parseCoordinates = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement, width: number, height: number) => {
+export const parseCoordinates = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement, width: number, height: number) => {
     if (element.x) {
         if (typeof element.x == 'string') {
             switch (element.x) {
@@ -80,7 +82,7 @@ const parseCoordinates = (doc: typeof PDFDocument, schema: PDFSchema, element: P
     }
 }
 
-const parseText = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFTextElement, options: ParsingOptions) => {
+export const parseText = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFTextElement, options: ParsingOptions) => {
     if (element.context) {
         applyContext(doc, schema, element.context, options)
     }
@@ -93,7 +95,7 @@ const parseText = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFTextE
     doc.text(element.text, element.options)
 }
 
-const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImageElement, options: ParsingOptions) => {
+export const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImageElement, options: ParsingOptions) => {
     if (element.context) {
         applyContext(doc, schema, element.context, options)
     }
@@ -107,7 +109,7 @@ const parseImage = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFImag
 }
 
 // TODO(@danielpanero): change this in a function that simply accepts an object with {[type:string]}: Fn
-const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement, options: ParsingOptions) => {
+export const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement, options: ParsingOptions) => {
     switch (element.type) {
         case 'text':
             parseText(doc, schema, element as PDFTextElement, options)
@@ -117,14 +119,19 @@ const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element: PDFEl
             parseImage(doc, schema, element as PDFImageElement, options)
             break
 
+        case 'table':
+            parseTable(doc, schema, element as PDFTableElement, options)
+            break
+
         default:
+            //TODO(@danielpanero): support for returning element to parse
             if (!options.customElementParser || !options.customElementParser(doc, schema, element)) {
                 throw `Element "${element.type}" can't be parsed (either no customElementParser was defined or it wasn't a supported type: text, image...)`
             }
     }
 }
 
-const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, options: ParsingOptions) => {
+export const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, options: ParsingOptions) => {
     // TODO(@danielpanero): support for images at page level
     if (page.options) {
         doc.addPage(page.options)
@@ -149,12 +156,7 @@ const parsePage = (doc: typeof PDFDocument, schema: PDFSchema, page: PDFPage, op
     })
 }
 
-interface ParsingOptions {
-    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => boolean
-    customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => boolean
-}
-
-const parseSchema = (schema: PDFSchema, stream: NodeJS.WritableStream, options: ParsingOptions = {}) => {
+export const parseSchema = (schema: PDFSchema, stream: NodeJS.WritableStream, options: ParsingOptions = {}) => {
     const doc = new PDFDocument(schema.options);
     doc.pipe(stream)
 
