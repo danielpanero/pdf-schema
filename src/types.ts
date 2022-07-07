@@ -88,6 +88,6 @@ export interface PDFSchema {
 }
 
 export interface ParsingOptions {
-    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => boolean
+    customElementParser?: (doc: typeof PDFDocument, schema: PDFSchema, element: PDFElement) => PDFElement | void
     customContext?: (doc: typeof PDFDocument, schema: PDFSchema, context: string) => boolean
 }

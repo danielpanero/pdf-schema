@@ -47,9 +47,13 @@ export const parseElement = (doc: typeof PDFDocument, schema: PDFSchema, element
             break
 
         default:
-            //TODO(@danielpanero): support for returning element to parse
-            if (!options.customElementParser || !options.customElementParser(doc, schema, element)) {
+            if (!options.customElementParser) {
                 throw `Element "${element.type}" can't be parsed (either no customElementParser was defined or it wasn't a supported type: text, image...)`
+            }
+
+            const result = options.customElementParser(doc, schema, element)
+            if(result) {
+                parseElement(doc, result, options)
             }
     }
 }
